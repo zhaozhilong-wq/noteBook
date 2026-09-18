@@ -38,7 +38,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notebook.R
-import com.example.notebook.data.entity.note
 
 @Composable
 fun DetailScreen(detailUiState: DetailUiState,dispatch : (DetailEvent) -> Unit){

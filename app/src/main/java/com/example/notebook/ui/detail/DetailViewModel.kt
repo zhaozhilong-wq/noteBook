@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.notebook.data.entity.note
 import com.example.notebook.data.repository.GroupPreferencesRepository
 import com.example.notebook.data.repository.Repository
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 

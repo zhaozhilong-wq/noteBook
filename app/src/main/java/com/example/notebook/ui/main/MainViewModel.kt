@@ -5,7 +5,6 @@ import android.app.framework.base.Effect
 import android.app.framework.base.Event
 import android.app.framework.base.MVIBaseAndroidVm
 import android.app.framework.base.State
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.notebook.data.entity.note
@@ -78,12 +77,6 @@ class MainViewModel (
     }
 
 
-//    init {
-//        viewModelScope.launch {
-//            for (i in 1..6)
-//                repository.insertNote(note(i.toLong(),"标题$i","内容$i","工作",System.currentTimeMillis()))
-//        }
-//    }
     override fun dispatch(event: MainEvent) {
         when(event){
             is MainEvent.selectGroup->{

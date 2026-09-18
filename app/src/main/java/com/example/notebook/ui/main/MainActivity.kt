@@ -9,16 +9,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
-import com.example.notebook.data.entity.note
-import com.example.notebook.data.repository.Repository
 import com.example.notebook.ui.detail.DetailActivity
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import kotlin.jvm.java
 
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModel()
@@ -38,9 +32,7 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            LaunchedEffect(Unit) {
-                mainViewModel.dispatch(MainEvent.selectGroup("全部"))
-            }
+
             mainViewModel.collectEffect {effect ->
                 when(effect){
                     is MainEffect.navigateToDetail -> {
@@ -56,6 +48,9 @@ class MainActivity : ComponentActivity() {
             }
 
             val mainUiState = mainViewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) {
+                mainViewModel.dispatch(MainEvent.selectGroup(mainUiState.value.selectedGroup))
+            }
             MainScreen(
                 mainUiState.value,
                 mainViewModel::dispatch
