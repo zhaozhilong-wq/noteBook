@@ -9,6 +9,7 @@ class Repository (
     fun getAllNotes() = noteDao.getAllNotes()
     fun getNoteByGroup(group: String) = noteDao.getNoteByGroup(group)
     fun search(group: String, title: String) = noteDao.search(group, title)
+    fun searchByTitle(title: String) = noteDao.searchByTitle(title)
 
     suspend fun insertNote(note: note) = noteDao.insertNote(note)
     suspend fun updateNote(note: note) = noteDao.updateNote(note)

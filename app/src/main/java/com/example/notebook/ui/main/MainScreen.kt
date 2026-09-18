@@ -56,6 +56,9 @@ fun MainScreen(
 {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    var showSearchDialog by remember { mutableStateOf(false) }
+
+    var showAddGroupDialog by remember { mutableStateOf(false) }
     Box(modifier = Modifier
         .fillMaxSize()
         .statusBarsPadding()
@@ -66,9 +69,9 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            TopBar(mainUiState.isgrid,onSearchClick={},onShowTypeBarClick={dispatch(MainEvent.toggleGrid)})
+            TopBar(mainUiState.isgrid,onSearchClick={},onShowTypeBarClick={dispatch(MainEvent.toggleGrid)},onShowSearchClick={showSearchDialog = true})
             Spacer(modifier = Modifier.height(20.dp))
-            GroupList(mainUiState.groups, mainUiState.selectedGroup, onGroupClick = {dispatch(MainEvent.selectGroup(it))})
+            GroupList(mainUiState.groups, mainUiState.selectedGroup, onGroupClick = {dispatch(MainEvent.selectGroup(it))},onAddGroupClick = {showAddGroupDialog = true})
             NoteList(dispatch,mainUiState.isgrid, mainUiState.notes,onNoteLongpress = {showDeleteDialog = true})
         }
     }
@@ -82,13 +85,32 @@ fun MainScreen(
             showDeleteDialog = false
         })
     }
+
+    if (showSearchDialog)
+    {
+        SearchDialog(DissMiss = {
+            showSearchDialog = false
+        }, onValueChanged = {
+            dispatch(MainEvent.search(mainUiState.selectedGroup,it))
+        })
+    }
+
+    if (showAddGroupDialog)
+    {
+        AddGroupDialog(DissMiss = {
+            showAddGroupDialog = false
+        }, onConfirm = {
+            dispatch(MainEvent.addGroup(it))
+        })
+    }
 }
 
 @Composable
 fun TopBar(
     isgrid: Boolean,
     onSearchClick: () -> Unit,
-    onShowTypeBarClick: () -> Unit
+    onShowTypeBarClick: () -> Unit,
+    onShowSearchClick: () -> Unit
     ){
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -137,6 +159,9 @@ fun TopBar(
                 modifier = Modifier
                     .wrapContentSize()
                     .align(Alignment.Center)
+                    .clickable(
+                        onClick = onShowSearchClick
+                    )
             )
         }
 
@@ -146,7 +171,8 @@ fun TopBar(
 fun GroupList(
     groups: List<String>,
     selectGroup: String,
-    onGroupClick: (String) -> Unit
+    onGroupClick: (String) -> Unit,
+    onAddGroupClick: () -> Unit
 ){
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -177,6 +203,9 @@ fun GroupList(
                         modifier = Modifier
                             .wrapContentSize()
                             .align(Alignment.Center)
+                            .clickable(
+                                onClick = onAddGroupClick
+                            )
                     )
                 }
             }
@@ -227,6 +256,27 @@ fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, 
                     }
                 }
             )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 30.dp, bottom = 30.dp)
+                    .size(60.dp)
+                    .clip(CircleShape)
+                    .background(Color.Red.copy(alpha = 0.5f))
+                    .clickable(
+                        onClick = {}
+                    )
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.ic_add),
+                    contentDescription = "Add",
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .align(Alignment.Center),
+                    colorFilter = ColorFilter.tint(Color.White)
+                )
+            }
         }
     }
     else{
@@ -275,7 +325,7 @@ fun NoteItem(dispatch: (MainEvent) -> Unit,isgrid: Boolean,note: note,onNoteLong
             modifier = Modifier
                 .width(90.dp)
                 .height(150.dp)
-                .padding(start = 15.dp)
+                .padding(start = 15.dp, bottom = 15.dp)
                 .clip(RoundedCornerShape(15.dp))
                 .background(Color.White)
                 .clickable(

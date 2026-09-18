@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.notebook.data.entity.note
+import com.example.notebook.data.repository.GroupPreferencesRepository
 import com.example.notebook.data.repository.Repository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -17,7 +18,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class MainUiState(
     val notes: List<note> = emptyList(),
-    val groups: List<String> = listOf("全部","工作","学习","生活","娱乐","重要"),
+    val groups: List<String> = emptyList(),
     val selectedGroup: String = "全部",
     val isgrid: Boolean = false,
     val selectNote : note? = null
@@ -46,6 +47,7 @@ sealed interface MainEffect: Effect{
 
 class MainViewModel (
     private val repository: Repository,
+    private val groupPreferencesRepository : GroupPreferencesRepository,
     application: Application,
     savedStateHandle: SavedStateHandle
 ) : MVIBaseAndroidVm<
@@ -60,6 +62,15 @@ class MainViewModel (
     private var notesJob: Job? = null
     override fun getInitState(): MainUiState {
         return MainUiState()
+    }
+    init {
+        viewModelScope.launch {
+            groupPreferencesRepository.groupFlow.collect { groups ->
+                emitState {
+                    copy(groups = groups)
+                }
+            }
+        }
     }
 
 
@@ -105,6 +116,34 @@ class MainViewModel (
                     repository.deleteNote(event.note)
                 }
                 emitState { copy(selectNote = null) }
+            }
+            is MainEvent.search -> {
+                //如果group是全部，就搜索所有note，否则搜索group的note
+                notesJob?.cancel()
+                if (event.group != "全部")
+                {
+                    notesJob = viewModelScope.launch {
+                        repository.search(event.group, event.title).collect { notes ->
+                            emitState {
+                                copy(notes = notes)
+                            }
+                        }
+                    }
+                }else{
+                    notesJob = viewModelScope.launch {
+                        repository.searchByTitle(event.title).collect { notes ->
+                            emitState {
+                                copy(notes = notes)
+                            }
+                        }
+                    }
+                }
+            }
+            is MainEvent.addGroup -> {
+                //判断是否已重复，重复弹toast后面再做
+                viewModelScope.launch {
+                    groupPreferencesRepository.addGroup(event.group)
+                }
             }
             else -> {}
         }

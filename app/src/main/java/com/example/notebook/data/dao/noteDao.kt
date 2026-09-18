@@ -37,6 +37,11 @@ interface noteDao {
             ORDER BY createdAt DESC""")
     fun search(group: String, title: String): Flow<List<note>>
 
+    //title模糊查询
+    @Query("""SELECT * FROM note
+            WHERE title LIKE '%' || :title || '%'
+            ORDER BY createdAt DESC""")
+    fun searchByTitle(title: String): Flow<List<note>>
     @Delete
     suspend fun deleteNote(note: note)
 }

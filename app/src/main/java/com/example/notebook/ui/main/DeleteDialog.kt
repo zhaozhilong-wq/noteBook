@@ -39,7 +39,7 @@ fun DeleteDialog(DissMiss: () -> Unit,onDeleteClick: () -> Unit){
                 text = "确定要删除这条笔记吗？删除后无法恢复。",
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(top = 20.dp, start = 20.dp, end = 20.dp),
+                    .padding( start = 20.dp, end = 20.dp),
                 color = Color.Black,
                 fontSize = 16.sp
             )
