@@ -31,17 +31,27 @@ interface noteDao {
             ORDER BY createdAt DESC""")
     fun getNoteByGroup(group: String): Flow<List<note>>
 
+    @Query("""
+    SELECT * FROM note
+    WHERE title LIKE '%' || :title || '%'
+       OR content LIKE '%' || :title || '%'
+    ORDER BY createdAt DESC
+""")
+    fun searchAll(title: String): Flow<List<note>>
+
     //限定某一group的，title模糊查询
-    @Query("""SELECT * FROM note
-            WHERE `group` = :group AND title LIKE '%' || :title || '%'
-            ORDER BY createdAt DESC""")
+    @Query("""
+    SELECT * FROM note
+    WHERE `group` = :group
+      AND (
+          title LIKE '%' || :title || '%'
+          OR content LIKE '%' || :title || '%'
+      )
+    ORDER BY createdAt DESC
+""")
     fun search(group: String, title: String): Flow<List<note>>
 
-    //title模糊查询
-    @Query("""SELECT * FROM note
-            WHERE title LIKE '%' || :title || '%'
-            ORDER BY createdAt DESC""")
-    fun searchByTitle(title: String): Flow<List<note>>
+
     @Delete
     suspend fun deleteNote(note: note)
 }

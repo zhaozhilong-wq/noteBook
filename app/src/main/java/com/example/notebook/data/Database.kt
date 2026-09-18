@@ -7,7 +7,7 @@ import com.example.notebook.data.entity.note
 
 @Database(
     entities = [note::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class Database : RoomDatabase(){

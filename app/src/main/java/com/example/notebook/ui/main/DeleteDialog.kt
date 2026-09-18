@@ -49,7 +49,7 @@ fun DeleteDialog(DissMiss: () -> Unit,onDeleteClick: () -> Unit){
                     .padding(bottom = 20.dp, end = 20.dp)
                     .width(60.dp)
                     .height(40.dp)
-                    .background(Color.Red.copy(alpha = 0.5f))
+                    .background(Color.Red.copy(alpha = 0.5f), shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
                     .clickable { onDeleteClick() }
             ){
                 Text(
@@ -67,7 +67,7 @@ fun DeleteDialog(DissMiss: () -> Unit,onDeleteClick: () -> Unit){
                     .padding(bottom = 20.dp, end = 100.dp)
                     .width(60.dp)
                     .height(40.dp)
-                    .background(Color.Gray.copy(alpha = 0.5f))
+                    .background(Color.Gray.copy(alpha = 0.5f), shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
                     .clickable { DissMiss() }
             ){
                 Text(

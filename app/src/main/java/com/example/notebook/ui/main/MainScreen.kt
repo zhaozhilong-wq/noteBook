@@ -1,8 +1,10 @@
 package com.example.notebook.ui.main
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +48,9 @@ import androidx.compose.ui.unit.sp
 import androidx.room.Delete
 import com.example.notebook.R
 import com.example.notebook.data.entity.note
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 @Composable
@@ -72,7 +77,7 @@ fun MainScreen(
             TopBar(mainUiState.isgrid,onSearchClick={},onShowTypeBarClick={dispatch(MainEvent.toggleGrid)},onShowSearchClick={showSearchDialog = true})
             Spacer(modifier = Modifier.height(20.dp))
             GroupList(mainUiState.groups, mainUiState.selectedGroup, onGroupClick = {dispatch(MainEvent.selectGroup(it))},onAddGroupClick = {showAddGroupDialog = true})
-            NoteList(dispatch,mainUiState.isgrid, mainUiState.notes,onNoteLongpress = {showDeleteDialog = true})
+            NoteList(dispatch,mainUiState.isgrid, mainUiState.notes,onNoteLongpress = {showDeleteDialog = true},openDetail = {dispatch(MainEvent.openDetail(it))})
         }
     }
 
@@ -237,7 +242,7 @@ fun GroupItem(group: String, selectGroup: String, onGroupClick: (String) -> Unit
 }
 
 @Composable
-fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, onNoteLongpress: () -> Unit){
+fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, onNoteLongpress: () -> Unit,openDetail: (Long?) -> Unit){
     if (isgrid)
     {
         Box(
@@ -252,7 +257,7 @@ fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, 
                 columns = GridCells.Fixed(2),
                 content = {
                     items(notes) { note ->
-                        NoteItem(dispatch,isgrid,note, onNoteLongpress)
+                        NoteItem(dispatch,isgrid,note, onNoteLongpress,openDetail)
                     }
                 }
             )
@@ -265,7 +270,7 @@ fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, 
                     .clip(CircleShape)
                     .background(Color.Red.copy(alpha = 0.5f))
                     .clickable(
-                        onClick = {}
+                        onClick = {openDetail(null)}
                     )
             ) {
                 Image(
@@ -291,7 +296,7 @@ fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, 
                     .fillMaxSize()
             ) {
                 items(notes) { note ->
-                    NoteItem(dispatch,isgrid,note,onNoteLongpress)
+                    NoteItem(dispatch,isgrid,note,onNoteLongpress,openDetail)
                 }
             }
 
@@ -303,7 +308,7 @@ fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, 
                     .clip(CircleShape)
                     .background(Color.Red.copy(alpha = 0.5f))
                     .clickable(
-                        onClick = {}
+                        onClick = { openDetail(null) }
                     )
             ) {
                 Image(
@@ -319,7 +324,7 @@ fun NoteList(dispatch: (MainEvent) -> Unit, isgrid: Boolean, notes: List<note>, 
     }
 }
 @Composable
-fun NoteItem(dispatch: (MainEvent) -> Unit,isgrid: Boolean,note: note,onNoteLongpress: () -> Unit){
+fun NoteItem(dispatch: (MainEvent) -> Unit,isgrid: Boolean,note: note,onNoteLongpress: () -> Unit,openDetail: (Long?) -> Unit){
     if (isgrid){
         Box(
             modifier = Modifier
@@ -328,20 +333,23 @@ fun NoteItem(dispatch: (MainEvent) -> Unit,isgrid: Boolean,note: note,onNoteLong
                 .padding(start = 15.dp, bottom = 15.dp)
                 .clip(RoundedCornerShape(15.dp))
                 .background(Color.White)
-                .clickable(
-                    onClick = {}
+                .combinedClickable(
+                    onLongClick = {
+                        onNoteLongpress()
+                        dispatch(MainEvent.selectNote(note))
+                    },
+                    onClick = {
+                        dispatch(MainEvent.selectNote(note))
+                        openDetail(note.id)
+                    }
                 )
-                .pointerInput(Unit){
-                    detectTapGestures (
-                        onLongPress = {
-                            onNoteLongpress()
-                            dispatch(MainEvent.selectNote(note))
-                        }
-                    )
-                }
         ) {
             Text(
-                text = note.title,
+                text = if (note.title=="") {
+                    note.content.take(10)
+                } else {
+                    note.title
+                },
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 color = Color.Black,
@@ -351,7 +359,7 @@ fun NoteItem(dispatch: (MainEvent) -> Unit,isgrid: Boolean,note: note,onNoteLong
                     .padding(start = 15.dp, top = 15.dp)
             )
             Text(
-                text = note.createdAt.toString(),
+                text = formatTime(note.createdAt),
                 color = Color.Gray,
                 fontSize = 12.sp,
                 modifier = Modifier
@@ -381,32 +389,37 @@ fun NoteItem(dispatch: (MainEvent) -> Unit,isgrid: Boolean,note: note,onNoteLong
         Box(
             modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(120.dp)
             .padding(top = 15.dp)
             .clip(RoundedCornerShape(15.dp))
             .background(Color.White)
-            .clickable(
-                onClick = {}
-            )
-                .pointerInput(Unit){
-                    detectTapGestures (
-                        onLongPress = {
-                            onNoteLongpress()
-                            dispatch(MainEvent.selectNote(note))
-                        }
-                    )
+            .combinedClickable(
+                onLongClick = {
+                    onNoteLongpress()
+                    dispatch(MainEvent.selectNote(note))
+                },
+                onClick = {
+                    dispatch(MainEvent.selectNote(note))
+                    openDetail(note.id)
                 }
+            )
         ) {
             Text(
-                text = note.title,
+                text = if (note.title=="") {
+                    note.content.take(10)
+                } else {
+                    note.title
+                },
                 color = Color.Black,
                 fontSize = 20.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .padding(start = 15.dp, top = 15.dp)
+                    .padding(start = 15.dp, top = 15.dp, end = 100.dp, bottom = 20.dp)
             )
             Text(
-                text = note.createdAt.toString(),
+                text = formatTime(note.createdAt),
                 color = Color.Gray,
                 fontSize = 12.sp,
                 modifier = Modifier
@@ -432,4 +445,11 @@ fun NoteItem(dispatch: (MainEvent) -> Unit,isgrid: Boolean,note: note,onNoteLong
             }
         }
     }
+}
+fun formatTime(timeMillis: Long): String {
+    val format = SimpleDateFormat(
+        "yyyy-MM-dd HH:mm",
+        Locale.getDefault()
+    )
+    return format.format(Date(timeMillis))
 }

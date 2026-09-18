@@ -38,10 +38,14 @@ sealed interface MainEvent: Event{
 
     data class deleteNote(val note: note): MainEvent
 
+    data class openDetail(val noteId: Long?): MainEvent
+
 }
 
 sealed interface MainEffect: Effect{
+    data class navigateToDetail(val noteId: Long?): MainEffect
 
+    object showToast: MainEffect
 }
 
 
@@ -131,7 +135,7 @@ class MainViewModel (
                     }
                 }else{
                     notesJob = viewModelScope.launch {
-                        repository.searchByTitle(event.title).collect { notes ->
+                        repository.searchAll(event.title).collect { notes ->
                             emitState {
                                 copy(notes = notes)
                             }
@@ -141,9 +145,21 @@ class MainViewModel (
             }
             is MainEvent.addGroup -> {
                 //判断是否已重复，重复弹toast后面再做
-                viewModelScope.launch {
-                    groupPreferencesRepository.addGroup(event.group)
+                if(
+                    !uiState.value.groups.contains(event.group)
+                ){
+                    viewModelScope.launch {
+                        groupPreferencesRepository.addGroup(event.group)
+                    }
                 }
+                else{
+                    emitEffect(
+                        MainEffect.showToast
+                    )
+                }
+            }
+            is MainEvent.openDetail -> {
+                emitEffect(MainEffect.navigateToDetail(event.noteId))
             }
             else -> {}
         }

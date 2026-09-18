@@ -49,6 +49,7 @@ val appModule = module{
     viewModel {
         DetailViewModel(
             repository = get(),
+            groupPreferencesRepository = get(),
             application = get(),
             savedStateHandle = get()
         )
